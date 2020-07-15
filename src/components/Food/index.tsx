@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FiEdit3, FiTrash } from 'react-icons/fi';
 
 import { Container } from './styles';
+import api from '../../services/api';
 
 interface IFoodPlate {
   id: number;
@@ -26,12 +27,16 @@ const Food: React.FC<IProps> = ({
 }: IProps) => {
   const [isAvailable, setIsAvailable] = useState(food.available);
 
-  async function toggleAvailable(): Promise<void> {
-    // TODO UPDATE STATUS (available)
+  async function toggleAvailable(foodToEdit: IFoodPlate): Promise<void> {
+    setIsAvailable(!isAvailable);
+    await api.put<IFoodPlate>(`http://localhost:3333/foods/${foodToEdit.id}`, {
+      ...foodToEdit,
+      available: isAvailable,
+    });
   }
 
-  function setEditingFood(): void {
-    // TODO - SET THE ID OF THE CURRENT ITEM TO THE EDITING FOOD AND OPEN MODAL
+  function setEditingFood(foodToEdit: IFoodPlate): void {
+    handleEditFood({ ...foodToEdit, available: isAvailable });
   }
 
   return (
@@ -51,7 +56,7 @@ const Food: React.FC<IProps> = ({
           <button
             type="button"
             className="icon"
-            onClick={() => setEditingFood()}
+            onClick={() => setEditingFood(food)}
             data-testid={`edit-food-${food.id}`}
           >
             <FiEdit3 size={20} />
@@ -75,7 +80,7 @@ const Food: React.FC<IProps> = ({
               id={`available-switch-${food.id}`}
               type="checkbox"
               checked={isAvailable}
-              onChange={toggleAvailable}
+              onChange={() => toggleAvailable(food)}
               data-testid={`change-status-food-${food.id}`}
             />
             <span className="slider" />
